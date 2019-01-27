@@ -1,0 +1,6 @@
+[submodule "pycpd"]
+	path = pycpd
+	url = git@github.com:siavashk/pycpd.git
+[submodule "3rdParty/pycpd"]
+	path = 3rdParty/pycpd
+	url = git@github.com:siavashk/pycpd.git
