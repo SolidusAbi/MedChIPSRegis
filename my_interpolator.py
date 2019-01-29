@@ -75,7 +75,7 @@ alpha[ref_pts] = 1
 # Importante: las cooordenadas de los ptos de ref no pueden ser manipuladas por otr pto de referencia
 # =============================================================================
 ref_x_coord, ref_y_coord, ref_z_coord = sim_image_object.getPointRefCoords()
-displace_y_coord = np.asarray(ref_y_coord) + np.array([2,1,-1,-1])
+displace_y_coord = np.asarray(ref_y_coord) + np.array([2,1,-1,-1]) #
 
 displaced_image = np.ones(sim_image.shape)
 
