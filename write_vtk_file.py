@@ -8,7 +8,7 @@ Created on Thu Dec 20 11:53:04 2018
 import numpy as np
 
 #def write_unstructured_file(Ym, r_values, g_values, b_values):
-def write_unstructured_file(Ym,r_values,):
+def write_unstructured_file(file_name,Ym,r_values):
     r_values = r_values.reshape(25,1)
     g_values = r_values
     b_values = r_values
@@ -20,7 +20,7 @@ def write_unstructured_file(Ym,r_values,):
     alpha = 0.5 #opacity of the rgb values
       
     #Create a DATAFILE
-    fd = open("grid_final.vtk","w") #vtk unstructured_grid_prueba_source.vtk
+    fd = open("{}".format(file_name),"w") #vtk unstructured_grid_prueba_source.vtk
     fd.write("# vtk DataFile Version 4.2\n")
     fd.write("vtk output\n")         
     fd.write("ASCII \n\n")

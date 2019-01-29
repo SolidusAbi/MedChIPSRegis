@@ -8,13 +8,15 @@ https://homepages.inf.ed.ac.uk/rbf/HIPR2/images/art5dst2.gif
 """
 import numpy as np
 from functools import reduce
-import math
+from math import ceil
 from scipy import ndimage
 import matplotlib.pyplot as plt
 from write_vtk_file import write_unstructured_file
 from pycpd import affine_registration
 
 from simulation.images import SimImage
+
+
 # =============================================================================
 # 1. Crear mapa de distancias para cada punto
 # 2. Transformada de distancia (scikit-image)
@@ -22,6 +24,21 @@ from simulation.images import SimImage
 #    Matriz con tensores de cada punto
 # 4. Aplicar la máscara 
 # =============================================================================
+
+def show(img):
+    '''
+    Show the image using matplotlib
+    @param nCol: number of columns of the figure.
+    '''
+    nCol = 3
+    plt.figure()
+    nRow = ceil(img.shape[2]/nCol)
+    for point_idx in range(img.shape[2]):
+        plt.subplot(nRow,nCol,point_idx+1)
+        plt.imshow(img[:,:,point_idx], "gray")
+        plt.xticks([]),plt.yticks([])
+    plt.show()
+
 
 # n_ref_pts = 3
 # shape = (5,5,n_ref_pts)
@@ -52,18 +69,22 @@ n_ref_pts = 4
 sim_image_object = SimImage(shape, n_ref_pts)
 sim_image = sim_image_object.getImage()
 
+
 #    def Interpolation(sim_image):
 dist_transform, indices = ndimage.distance_transform_edt(sim_image,return_indices = True)
 
 alpha_dist = np.zeros((dist_transform.shape[0],dist_transform.shape[1]))
 n_pixels = dist_transform.shape[0]*dist_transform.shape[1]
 
-pts = np.where(sim_image > 0)
-ref_pts = np.where(sim_image < 1)
+#pts = np.where(sim_image > 0)
+#ref_pts = np.where(sim_image < 1)
+
+pts = sim_image_object.getOtherPointsCoords()
+ref_pts = sim_image_object.getPointRefCoords()
 
 denom = dist_transform[pts].reshape(n_pixels - 1, dist_transform.shape[2])
 denom = 1/denom[:]
-inverse_d = np.sum(denom[:], axis=0)
+inverse_d = np.sum(denom[:], axis=0)  #Hay un denominador por cada plano
 
 w_dist = ((1/dist_transform[pts]).reshape(n_pixels - 1, dist_transform.shape[2]))/inverse_d
 
@@ -86,17 +107,17 @@ displaced_pts = np.array(displaced_pts)
 ref_pts = np.array(ref_pts)
 
 disp_coords = displaced_pts - ref_pts
-a = np.zeros(disp_coords.shape)
-a[::3] = disp_coords.ravel()[::3]
-a[1::3] = disp_coords.ravel()[1::3]
-a[2::3] = disp_coords.ravel()[2::3]
+transforms = np.zeros((n_ref_pts,3))
 
-
-
-v = np.zeros((3,5,5,3))
-v[0,:,:,:] = a[0]
-v[1,:,:,:] = a[1]
-v[2,:,:,:] = a[2]
+for idx in range(n_ref_pts):
+    transforms.ravel()[idx::3] = disp_coords.ravel()[idx::n_ref_pts]
+    
+    
+#(npoints,dim,dim,[x y z])
+v = np.zeros((n_ref_pts,shape[0],shape[1],3))
+v[0,:,:,:] = transforms[0]
+v[1,:,:,:] = transforms[1]
+v[2,:,:,:] = transforms[2]
 
 result = np.zeros(v.shape)
 for slice_idx in range(n_ref_pts):
@@ -121,10 +142,15 @@ for y_idx in range(n):
 
 #Posiciones finales
 im_result = np.sum(result, axis=0) + Ym.reshape(5,5,3)
+
+
+
 im_result0 = result[0,:,:,:] + Ym.reshape(5,5,3)
 im_result1 = result[1,:,:,:] + Ym.reshape(5,5,3)
 im_result2 = result[2,:,:,:] + Ym.reshape(5,5,3)
 
-write_unstructured_file(im_result.reshape(25,3),grey_values)
-
+write_unstructured_file('grid.vtk',im_result.reshape(25,3),grey_values)
+write_unstructured_file('grid0.vtk',im_result0.reshape(25,3),grey_values)
+write_unstructured_file('grid1.vtk',im_result1.reshape(25,3),grey_values)
+write_unstructured_file('grid2.vtk',im_result2.reshape(25,3),grey_values)
 
