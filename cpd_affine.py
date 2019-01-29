@@ -15,7 +15,7 @@ import numpy as np
 #import time
 import SimpleITK as sitk
 import cv2
-import SkinSegmentation
+import segmentation.skinSegmentation
 from write_vtk_file import write_unstructured_file
 #import os
 
@@ -39,8 +39,8 @@ def visualize(iteration, error, X, Y, ax):
 
 #def main():
 #Read and resize images
-img1 = cv2.imread('mano2c.jpg')
-img2 = cv2.imread('mano1c.jpg')
+img1 = cv2.imread('test/mano2c.jpg')
+img2 = cv2.imread('test/mano1c.jpg')
 
 img1 = cv2.resize(img1,(480,480))
 img2 = cv2.resize(img2,(480,480))

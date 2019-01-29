@@ -3,7 +3,7 @@
 '''
 import numpy as np
 import cv2
-import utils
+#import utils
 
 class Format():
     BGR = 0,

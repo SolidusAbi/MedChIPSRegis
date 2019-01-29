@@ -12,6 +12,7 @@ import math
 from scipy import ndimage
 import matplotlib.pyplot as plt
 from write_vtk_file import write_unstructured_file
+from pycpd import affine_registration
 # =============================================================================
 # 1. Crear mapa de distancias para cada punto
 # 2. Transformada de distancia (scikit-image)
