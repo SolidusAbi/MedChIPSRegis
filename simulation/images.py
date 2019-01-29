@@ -42,6 +42,14 @@ class SimImage():
             plt.xticks([]),plt.yticks([])
         plt.show()
 
+    def getPointRefCoords(self):
+        '''
+            Return the X, Y and Z coords in a list with each axes separated. 
+            [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
+        '''
+        return np.where(self.img < 1)
+
+
 if __name__ == "__main__":
-    test = SimImage((24,24), 6)
+    test = SimImage((5,5), 4)
     test.show()

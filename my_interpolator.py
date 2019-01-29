@@ -13,6 +13,8 @@ from scipy import ndimage
 import matplotlib.pyplot as plt
 from write_vtk_file import write_unstructured_file
 from pycpd import affine_registration
+
+from simulation.images import SimImage
 # =============================================================================
 # 1. Crear mapa de distancias para cada punto
 # 2. Transformada de distancia (scikit-image)
@@ -21,28 +23,34 @@ from pycpd import affine_registration
 # 4. Aplicar la máscara 
 # =============================================================================
 
-n_ref_pts = 3
-shape = (5,5,n_ref_pts)
+# n_ref_pts = 3
+# shape = (5,5,n_ref_pts)
 
-def simulatedImage(shape):
-    sim_image = np.ones(reduce((lambda x, y: x * y), list(shape)))
-    stride = (shape[0]*shape[1]/(shape[2]-1)) 
-    stride_2D = np.arange(0, shape[0]*shape[1], step=stride).astype(np.uint)
-    stride_3D = np.arange(0, shape[2])*(shape[0]*shape[1])
+# def simulatedImage(shape):
+#     sim_image = np.ones(reduce((lambda x, y: x * y), list(shape)))
+#     stride = (shape[0]*shape[1]/(shape[2]-1)) 
+#     stride_2D = np.arange(0, shape[0]*shape[1], step=stride).astype(np.uint)
+#     stride_3D = np.arange(0, shape[2])*(shape[0]*shape[1])
     
-    if len(stride_2D) < len(stride_3D):
-        stride_2D = np.append(stride_2D, shape[0]*shape[1]-1)
+#     if len(stride_2D) < len(stride_3D):
+#         stride_2D = np.append(stride_2D, shape[0]*shape[1]-1)
         
-    coords = stride_2D + stride_3D 
+#     coords = stride_2D + stride_3D 
     
-    sim_image[coords.astype(np.uint)] = 0
-    sim_image = sim_image.reshape(shape[2], shape[1], shape[0])
-    sim_image = np.transpose(sim_image, axes=[2,1,0]).astype(np.float32)
-    return(sim_image)
+#     sim_image[coords.astype(np.uint)] = 0
+#     sim_image = sim_image.reshape(shape[2], shape[1], shape[0])
+#     sim_image = np.transpose(sim_image, axes=[2,1,0]).astype(np.float32)
+#     return(sim_image)
 
-sim_image = simulatedImage(shape)
+# sim_image = simulatedImage(shape)
 
-
+'''
+        New code 
+'''
+shape = (5,5)
+n_ref_pts = 4
+sim_image_object = SimImage(shape, n_ref_pts)
+sim_image = sim_image_object.getImage()
 
 #    def Interpolation(sim_image):
 dist_transform, indices = ndimage.distance_transform_edt(sim_image,return_indices = True)
@@ -66,10 +74,12 @@ alpha[ref_pts] = 1
 # =============================================================================
 # Importante: las cooordenadas de los ptos de ref no pueden ser manipuladas por otr pto de referencia
 # =============================================================================
+ref_x_coord, ref_y_coord, ref_z_coord = sim_image_object.getPointRefCoords()
+displace_y_coord = np.asarray(ref_y_coord) + np.array([2,1,-1,-1])
 
 displaced_image = np.ones(sim_image.shape)
 
-displaced_pts = ([0,2,4],[2,4,2],[0,1,2])
+displaced_pts = (ref_x_coord, displace_y_coord, ref_z_coord)
 displaced_image[displaced_pts] = 0
 
 displaced_pts = np.array(displaced_pts)
