@@ -46,21 +46,21 @@ class SimImage():
         '''
             Return the X, Y and Z coords in a list with each axes separated.
             The result is ordered  by Z coords.
-            [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
+            ([x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n])
         '''
         find_pts = np.asarray(np.where(self.img < 1))
         result = self.sortCoordsByDepth(find_pts)
-        return result
+        return (result[0,:], result[1,:], result[2,:])
 
     def getOtherPointCoords(self):
         '''
             Return the X, Y and Z coords in a list with each axes separated.
             The result is ordered  by Z coords.
-            [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
+            ([x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n])
         '''
         find_other_pts = np.asarray(np.where(self.img > 0))
         result = self.sortCoordsByDepth(find_other_pts)
-        return result
+        return (result[0,:], result[1,:], result[2,:])
 
     def sortCoordsByDepth(self, coords_array):
         '''
