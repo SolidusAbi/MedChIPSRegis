@@ -42,19 +42,58 @@ class SimImage():
             plt.xticks([]),plt.yticks([])
         plt.show()
 
-    def getPointRefCoords(self):
+    def getRefPointCoords(self):
         '''
-            Return the X, Y and Z coords in a list with each axes separated. 
+            Return the X, Y and Z coords in a list with each axes separated.
+            The result is ordered  by Z coords.
             [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
         '''
-        return np.where(self.img < 1)
+        print(np.asarray(np.where(self.img < 1)))
+        find_pts = np.asarray(np.where(self.img < 1))
+        n_ref_points = self.img.shape[2]
+        print(len(find_pts[2]))
+        print(n_ref_points)
+        result = self.sortCoordsByDepth(find_pts)
+        return result
 
-    def getOtherPointsCoords(self):
+    def getOtherPointCoords(self):
         '''
-            Return the X, Y and Z coords in a list with each axes separated. 
+            Return the X, Y and Z coords in a list with each axes separated.
+            The result is ordered  by Z coords.
             [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
         '''
-        return np.where(self.img > 0)
+        find_other_pts = np.asarray(np.where(self.img > 0))
+        n_no_ref_points = (self.img.shape[0]*self.img.shape[1] - 1)*self.img.shape[2]
+        print(len(find_other_pts[2]))
+        print(n_no_ref_points)
+        result = self.sortCoordsByDepth(find_other_pts)
+        return result
+
+    def sortCoordsByDepth(self, coords_array):
+        '''
+            This function is used in order to sort the differents coords by
+            3rd axis order. 
+            
+            @params coords_array: array with the coords information where each axis
+                is represented in specific row ([[X_0, .., X_n], [Y_0, .., Y_n], [Z_0, .., Z_n]])
+        '''
+        stride = len(coords_array[2])
+        
+        sorted_z = np.unique(np.sort(coords_array[2]))
+        sorted_coords = np.zeros(coords_array.shape[0]*coords_array.shape[1]).astype(np.int64)
+        
+        result_idx = 0
+        for z_idx in sorted_z.tolist():
+            col_idx = np.argwhere(coords_array[2] == z_idx)
+            coord_list = col_idx.ravel().tolist()
+            
+            for coord_idx in coord_list:
+                sorted_coords[result_idx::stride] = coords_array.ravel()[coord_idx::stride]
+                result_idx = result_idx + 1
+       
+        sorted_coords = sorted_coords.reshape(coords_array.shape)
+        return sorted_coords
+        
 
 if __name__ == "__main__":
     test = SimImage((5,5), 4)

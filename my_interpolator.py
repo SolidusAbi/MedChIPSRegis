@@ -79,12 +79,12 @@ n_pixels = dist_transform.shape[0]*dist_transform.shape[1]
 #pts = np.where(sim_image > 0)
 #ref_pts = np.where(sim_image < 1)
 
-pts = sim_image_object.getOtherPointsCoords()
-ref_pts = sim_image_object.getPointRefCoords()
+pts = sim_image_object.getOtherPointsCoords()   #Background points
+ref_pts = sim_image_object.getPointRefCoords()  #Reference points
 
 denom = dist_transform[pts].reshape(n_pixels - 1, dist_transform.shape[2])
 denom = 1/denom[:]
-inverse_d = np.sum(denom[:], axis=0)  #Hay un denominador por cada plano
+inverse_d = np.sum(denom[:], axis=0)  #There is a denominator for each slice
 
 w_dist = ((1/dist_transform[pts]).reshape(n_pixels - 1, dist_transform.shape[2]))/inverse_d
 
@@ -96,7 +96,7 @@ alpha[ref_pts] = 1
 # Importante: las cooordenadas de los ptos de ref no pueden ser manipuladas por otr pto de referencia
 # =============================================================================
 ref_x_coord, ref_y_coord, ref_z_coord = sim_image_object.getPointRefCoords()
-displace_y_coord = np.asarray(ref_y_coord) + np.array([2,1,-1,-1]) #
+displace_y_coord = np.asarray(ref_y_coord) + np.array([2,1,-1,-1]) 
 
 displaced_image = np.ones(sim_image.shape)
 
@@ -110,14 +110,14 @@ disp_coords = displaced_pts - ref_pts
 transforms = np.zeros((n_ref_pts,3))
 
 for idx in range(n_ref_pts):
-    transforms.ravel()[idx::3] = disp_coords.ravel()[idx::n_ref_pts]
+    transforms[idx] = disp_coords.ravel()[idx::n_ref_pts]
     
     
 #(npoints,dim,dim,[x y z])
-v = np.zeros((n_ref_pts,shape[0],shape[1],3))
-v[0,:,:,:] = transforms[0]
-v[1,:,:,:] = transforms[1]
-v[2,:,:,:] = transforms[2]
+v = np.zeros((n_ref_pts,shape[0],shape[1],3))   #displacement vector
+
+for idx_v in range(n_ref_pts):
+    v[idx_v,:,:,:] = transforms[idx_v]
 
 result = np.zeros(v.shape)
 for slice_idx in range(n_ref_pts):
@@ -126,8 +126,12 @@ for slice_idx in range(n_ref_pts):
 
 m = sim_image.shape[0]
 n = sim_image.shape[1]   
-grey_values = sim_image[:,:,0]*sim_image[:,:,1]*sim_image[:,:,2]
-   
+grey_values = np.ones((n,m))
+
+for idx_sim in range(n_ref_pts):
+    grey_values = grey_values*sim_image[:,:,idx_sim]
+#    grey_values = sim_image[:,:,0]*sim_image[:,:,1]*sim_image[:,:,2]
+    
 
 Ym = np.zeros((m*n,3))  #Matriz de posiciones
 r_values = np.zeros((n*m,1))    #Matriz de valores de intensidad
@@ -143,14 +147,12 @@ for y_idx in range(n):
 #Posiciones finales
 im_result = np.sum(result, axis=0) + Ym.reshape(5,5,3)
 
-
-
 im_result0 = result[0,:,:,:] + Ym.reshape(5,5,3)
 im_result1 = result[1,:,:,:] + Ym.reshape(5,5,3)
 im_result2 = result[2,:,:,:] + Ym.reshape(5,5,3)
 
-write_unstructured_file('grid.vtk',im_result.reshape(25,3),grey_values)
-write_unstructured_file('grid0.vtk',im_result0.reshape(25,3),grey_values)
-write_unstructured_file('grid1.vtk',im_result1.reshape(25,3),grey_values)
-write_unstructured_file('grid2.vtk',im_result2.reshape(25,3),grey_values)
+write_unstructured_file('signos.vtk',im_result.reshape(25,3),r_values)
+write_unstructured_file('original_points.vtk',Ym.reshape(25,3),r_values)
+write_unstructured_file('grid1.vtk',im_result1.reshape(25,3),r_values)
+write_unstructured_file('grid2.vtk',im_result2.reshape(25,3),r_values)
 
