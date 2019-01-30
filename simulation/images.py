@@ -48,11 +48,7 @@ class SimImage():
             The result is ordered  by Z coords.
             [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
         '''
-        print(np.asarray(np.where(self.img < 1)))
         find_pts = np.asarray(np.where(self.img < 1))
-        n_ref_points = self.img.shape[2]
-        print(len(find_pts[2]))
-        print(n_ref_points)
         result = self.sortCoordsByDepth(find_pts)
         return result
 
@@ -63,9 +59,6 @@ class SimImage():
             [[x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n]]
         '''
         find_other_pts = np.asarray(np.where(self.img > 0))
-        n_no_ref_points = (self.img.shape[0]*self.img.shape[1] - 1)*self.img.shape[2]
-        print(len(find_other_pts[2]))
-        print(n_no_ref_points)
         result = self.sortCoordsByDepth(find_other_pts)
         return result
 
