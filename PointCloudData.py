@@ -23,6 +23,23 @@ class Data(object):
         ref_points_coords = (pts_ref[0][random_points], pts_ref[1][random_points], np.arange(n_ref_points))
         self.img[ref_points_coords] = 0
 
+    def getPointCoords(self):
+        '''
+            Return the X, Y and Z coords in a list with each axes separated.
+            The result is ordered  by Z coords.
+            ([x_0, x_1, ..., x_n] [y_0, y_1, ..., y_n] [z_0, z_1, ..., z_n])
+        '''
+        # pts_coords = np.asarray(np.where( (self.img[:,:,0][:,:,np.newaxis] > 0 or  ) ))
+        # print(self.img[:,:,0][:,:,np.newaxis].shape)
+        # print(len(np.where(self.img[:,:,0][:,:,np.newaxis])[0]))
+        # result = self.sortCoordsByDepth(pts_coords)
+        x_coords = np.repeat(np.arange(self.img.shape[0]), self.img.shape[1]) 
+        y_coords = np.arange(self.img.shape[1])
+        y_coords = np.repeat(y_coords.reshape((1,) + y_coords.shape), self.img.shape[0], axis=0)
+        y_coords = y_coords.ravel()
+        z_coords = np.zeros(self.img.shape[0]*self.img.shape[1])
+        return (x_coords, y_coords, z_coords) 
+
     def getRefPointCoords(self):
         '''
             Return the X, Y and Z coords in a list with each axes separated.
@@ -79,6 +96,30 @@ class Data(object):
         ref_coords = ((ref_coords[0]-x_dim)/x_dim, ((ref_coords[1]-y_dim)/y_dim))
         return ref_coords
 
+    def normalizeCoords(self, coords):
+        x_dim, y_dim, z_dim = self.img.shape
+        x_dim = x_dim/2
+        y_dim = y_dim/2
+        z_dim = z_dim/2
+
+        normalize_coords = coords.copy()
+        normalize_coords[:, 0] = (normalize_coords[:, 0] - x_dim) / x_dim
+        normalize_coords[:, 1] = (normalize_coords[:, 1] - y_dim) / y_dim
+        normalize_coords[:, 2] = (normalize_coords[:, 2] - z_dim) / z_dim
+        return normalize_coords
+
+    def invNormalizeCoords(self, coords):
+        x_dim, y_dim, z_dim = self.img.shape
+        x_dim = x_dim/2
+        y_dim = y_dim/2
+        z_dim = z_dim/2
+
+        inv_normalize_coords = coords.copy()
+        inv_normalize_coords[:,:, 0] = (inv_normalize_coords[:,:, 0] * x_dim) + x_dim
+        inv_normalize_coords[:,:, 1] = (inv_normalize_coords[:,:, 1] * y_dim) + y_dim
+        inv_normalize_coords[:,:, 2] = (inv_normalize_coords[:,:, 2] * z_dim) + z_dim
+
+        return inv_normalize_coords
 
 class TargetData(Data):
     
@@ -134,15 +175,24 @@ class TargetData(Data):
             interpolated_transform[slice_idx,:] = alpha[:,:,slice_idx][:,:,np.newaxis] * v[slice_idx, :]
 
         test = self.getRefPointCoords()
+        self.getNormalizedRefPointsCoords
 
-        print(interpolated_transform.shape)
-        print(v[(test[2][0], test[0][0], test[1][0])])
-        print(interpolated_transform[(test[2][0], test[0][0], test[1][0])])
-        # ref_coords = self.getNormalizedRefPointsCoords()
-        # normalized_result = (ref_coords[0] + transform[0], ref_coords[1] + transform[1])
-        # ( (normalized_result[0], (normalized_result[1]*y_dim) + y_dim, np.zeros(self.img.shape[2]) )
-        return None
+        points_coords = self.changeCoordsFormat(self.getPointCoords())
+        normalized_coords = self.normalizeCoords(points_coords)
 
+        result = np.sum(interpolated_transform, axis=0) + normalized_coords.reshape((self.img.shape[0],self.img.shape[1],3)) 
+        result = self.invNormalizeCoords(result)
+        
+        return result
+
+    def changeCoordsFormat(self, coords_array):
+        n_ref_points = len(coords_array[0])
+        xyz_format = np.zeros((n_ref_points, 3))
+        coords = np.asarray(coords_array)
+        for idx in range(n_ref_points):
+            xyz_format[idx] = coords.ravel()[idx::n_ref_points]
+
+        return xyz_format
 
     def show(self):
         plt.imshow(self.img)

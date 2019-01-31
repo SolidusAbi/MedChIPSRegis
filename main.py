@@ -6,6 +6,8 @@ from matplotlib import pyplot as plt
 from functools import partial
 from pycpd import deformable_registration
 
+from write_vtk_file import write_unstructured_file
+
 def visualize(iteration, error, X, Y, ax):
     plt.cla()
     ax.scatter(X[:,0] ,  X[:,1], color='grey', label='Fixed image')
@@ -14,6 +16,15 @@ def visualize(iteration, error, X, Y, ax):
     ax.legend(loc='upper left', fontsize='x-large')
     plt.draw()
     plt.pause(0.01)
+
+def mariaCosas(coords, values):
+    n_pixels = len(coords[0])
+
+    gray_values = np.zeros((n_pixels, 1))
+    for idx in range(n_pixels):
+        gray_values[idx, 0] = values[coords[0][idx], coords[1][idx]]
+
+    return gray_values
 
 if __name__ == '__main__':
     fixed_img = cv2.imread('test/synthetic_images/rect_fin.png', cv2.IMREAD_GRAYSCALE)
@@ -50,6 +61,17 @@ if __name__ == '__main__':
 
     gaussian_kernel, weight = reg.get_registration_parameters()
 
-    moving_pc.elasticTransform(np.dot(gaussian_kernel, weight))
-    # print(moving_pc.elasticTransform(np.dot(gaussian_kernel, weight)))
+    #moving_pc.elasticTransform(np.dot(gaussian_kernel, weight))
+    result = moving_pc.elasticTransform(np.dot(gaussian_kernel, weight))
+
+    # print(result.shape)
+    # print(result[0,0])
+    # print(moving_img.shape)
+
+    #Para que funcione lo de maria...
+    result2 = result.reshape(result.shape[0]*result.shape[1], 3)
+    gray_values = mariaCosas(moving_pc.getPointCoords(), moving_img)
+
+    write_unstructured_file('test.vtk', result2, gray_values)
+    # moving_pc.elasticTransform(np.dot(gaussian_kernel, weight))
     # print(fixed_pc.getRefPointCoords())
