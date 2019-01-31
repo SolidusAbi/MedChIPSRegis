@@ -71,6 +71,15 @@ class Data(object):
         sorted_coords = sorted_coords.reshape(coords_array.shape)
         return sorted_coords
 
+    def getNormalizedRefPointsCoords(self):
+        ref_coords = self.getRefPointCoords()
+        x_dim, y_dim, _ = self.img.shape
+        x_dim = x_dim/2
+        y_dim = y_dim/2
+        ref_coords = ((ref_coords[0]-x_dim)/x_dim, ((ref_coords[1]-y_dim)/y_dim))
+        return ref_coords
+
+
 class TargetData(Data):
     
     def __init__(self, binary_img:np.array, n_ref_points: int):
@@ -110,6 +119,6 @@ if __name__ == "__main__":
     test_fixed = cv2.Canny(test_fixed, 200, 255)
     test_moving = cv2.Canny(test_moving, 200, 255)
     data_fixed = Data(test_fixed, 20)
-    data_moving = TargetData(test_moving, 20)
+    data_moving = TargetData(test_moving, 41)
 
-    print(data_moving.getAlphaDistanceTransform().shape)
+    print(data_moving.getNormalizedRefPointsCoords())
