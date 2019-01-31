@@ -107,7 +107,42 @@ class TargetData(Data):
         return self.dist_transform
 
     def getAlphaDistanceTransform(self):
-        return self.alpha_dist_transform        
+        return self.alpha_dist_transform
+
+    def elasticTransform(self, v_transform):
+        '''
+            apply elastic transform to the point cloud data..
+            @param v_transform: This matrix is normalized by image size 
+        '''
+        n_ref_points = self.img.shape[2]
+
+        x_dim, y_dim, _ = self.img.shape
+        x_dim = x_dim/2
+        y_dim = y_dim/2
+        #transform = (v_transform[:,0], v_transform[:,1], np.zeros(n_ref_points))
+
+        transform = np.zeros((v_transform.shape[0], 3))
+        transform[:,:-1] = v_transform
+        
+        v = np.zeros(((n_ref_points, self.img.shape[0], self.img.shape[1], 3)))
+        for idx in range(n_ref_points):
+            v[idx, :] = transform[idx]
+
+        interpolated_transform = np.zeros(v.shape)
+        alpha = self.getAlphaDistanceTransform()
+        for slice_idx in range(n_ref_points):
+            interpolated_transform[slice_idx,:] = alpha[:,:,slice_idx][:,:,np.newaxis] * v[slice_idx, :]
+
+        test = self.getRefPointCoords()
+
+        print(interpolated_transform.shape)
+        print(v[(test[2][0], test[0][0], test[1][0])])
+        print(interpolated_transform[(test[2][0], test[0][0], test[1][0])])
+        # ref_coords = self.getNormalizedRefPointsCoords()
+        # normalized_result = (ref_coords[0] + transform[0], ref_coords[1] + transform[1])
+        # ( (normalized_result[0], (normalized_result[1]*y_dim) + y_dim, np.zeros(self.img.shape[2]) )
+        return None
+
 
     def show(self):
         plt.imshow(self.img)

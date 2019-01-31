@@ -1,6 +1,7 @@
 import numpy as np
 import PointCloudData
 import cv2
+from matplotlib import pyplot as plt
 
 from functools import partial
 from pycpd import deformable_registration
@@ -34,23 +35,21 @@ if __name__ == '__main__':
     for idx in range(n_points):
         normalized_fixed_coords[idx] = _normalized_fixed_coords.ravel()[idx::20]
         normalized_moving_coords[idx] = _normalized_moving_coords.ravel()[idx::20]
-        
-    print(normalized_fixed_coords)
-    # normalized_fixed_coords = normalized_fixed_coords.ravel()[::n_points].reshape(n_points, 2)
-    # normalized_moving_coords = normalized_moving_coords.ravel()[::n_points].reshape(n_points, 2)
-    # print(normalized_fixed_coords)
-    # print(normalized_moving_coords)
 
-    # reg = deformable_registration(beta=0.1, **{ 'X': x_copy, 'Y': y_copy, 'tolerance': 1e-10})
+    reg = deformable_registration(beta=0.1, **{ 'X': normalized_fixed_coords, 'Y': normalized_moving_coords, 'tolerance': 1e-10})
 
-    # # coords = [n_points, 2]
+    # coords = [n_points, 2]
 
-    # # Visualize #
-    # fig = plt.figure()
-    # fig.add_axes([0, 0, 1, 1])
-    # callback = partial(visualize, ax=fig.axes[0])
+    # Visualize #
+    fig = plt.figure()
+    fig.add_axes([0, 0, 1, 1])
+    callback = partial(visualize, ax=fig.axes[0])
 
-    # reg.register(callback)
-    # #############
+    reg.register(callback)
+    #############
 
-    # gaussian_kernel, weight = reg.get_registration_parameters()
+    gaussian_kernel, weight = reg.get_registration_parameters()
+
+    moving_pc.elasticTransform(np.dot(gaussian_kernel, weight))
+    # print(moving_pc.elasticTransform(np.dot(gaussian_kernel, weight)))
+    # print(fixed_pc.getRefPointCoords())
