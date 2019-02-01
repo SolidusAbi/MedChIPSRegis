@@ -46,6 +46,8 @@ class MultiColorSpace(object):
         
         self.resultImg = np.copy(self.inpuImg)
         self.resultImg *= multiChannelMask
+
+        return self.resultImg
         
     def getResult(self):
         return self.resultImg
@@ -87,17 +89,17 @@ class MultiColorSpace(object):
         #if V = R
         hsvImg[idxVeqR[0],idxVeqR[1],0] = (
             60*(normalizedRGB[idxVeqR[0], idxVeqR[1], 1] - normalizedRGB[idxVeqR[0], idxVeqR[1], 2])
-            ) / (hsvImg[idxVeqR[0], idxVeqR[1], 2] - minValues[idxVeqR[0], idxVeqR[1]])
+            ) / ((hsvImg[idxVeqR[0], idxVeqR[1], 2] - minValues[idxVeqR[0], idxVeqR[1]]) + 1e-10)
         
         #if V = G
         hsvImg[idxVeqG[0],idxVeqG[1],0] = 2 + (
             60*(normalizedRGB[idxVeqG[0], idxVeqG[1], 2] - normalizedRGB[idxVeqG[0], idxVeqG[1], 0])
-            ) / (hsvImg[idxVeqG[0], idxVeqG[1], 2] - minValues[idxVeqG[0], idxVeqG[1]])
+            ) / ((hsvImg[idxVeqG[0], idxVeqG[1], 2] - minValues[idxVeqG[0], idxVeqG[1]]) + 1e-10)
         
         #if V = B
         hsvImg[idxVeqB[0],idxVeqB[1],0] = 4 + (
             60*(normalizedRGB[idxVeqB[0], idxVeqB[1], 0] - normalizedRGB[idxVeqB[0], idxVeqB[1], 1])
-            ) / (hsvImg[idxVeqB[0], idxVeqB[1], 2] - minValues[idxVeqB[0], idxVeqB[1]])
+            ) / ((hsvImg[idxVeqB[0], idxVeqB[1], 2] - minValues[idxVeqB[0], idxVeqB[1]]) + 1e-10)
         
         negativeHueIdx = np.where(hsvImg[:,:,0] < 0)
         hsvImg[negativeHueIdx[0], negativeHueIdx[1]] += 360 

@@ -8,17 +8,22 @@ Created on Thu Dec 20 11:53:04 2018
 import numpy as np
 
 #def write_unstructured_file(Ym, r_values, g_values, b_values):
-def write_unstructured_file(file_name,Ym,r_values):
-    r_values = r_values.reshape(25,1)
-    g_values = r_values
-    b_values = r_values
+def write_unstructured_file(file_name,Ym, Ym_shape, grayscale_values):
+    r_values = grayscale_values
+    g_values = grayscale_values
+    b_values = grayscale_values
     n_points = Ym.shape[0]
-    height = 5 #Number of rows
-    width = 5 #Number of columns
+    #height = 5 #Number of rows
+    #width = 5 #Number of columns
+
+    height = Ym_shape[0] #Number of rows
+    width = Ym_shape[1] #Number of columns
+
     n_cells = (height-1)*(width-1)
     n_cell_values = n_cells*5 
     alpha = 0.5 #opacity of the rgb values
       
+    print(Ym)
     #Create a DATAFILE
     fd = open("{}".format(file_name),"w") #vtk unstructured_grid_prueba_source.vtk
     fd.write("# vtk DataFile Version 4.2\n")

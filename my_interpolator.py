@@ -40,27 +40,6 @@ def show(img):
     plt.show()
 
 
-# n_ref_pts = 3
-# shape = (5,5,n_ref_pts)
-
-# def simulatedImage(shape):
-#     sim_image = np.ones(reduce((lambda x, y: x * y), list(shape)))
-#     stride = (shape[0]*shape[1]/(shape[2]-1)) 
-#     stride_2D = np.arange(0, shape[0]*shape[1], step=stride).astype(np.uint)
-#     stride_3D = np.arange(0, shape[2])*(shape[0]*shape[1])
-    
-#     if len(stride_2D) < len(stride_3D):
-#         stride_2D = np.append(stride_2D, shape[0]*shape[1]-1)
-        
-#     coords = stride_2D + stride_3D 
-    
-#     sim_image[coords.astype(np.uint)] = 0
-#     sim_image = sim_image.reshape(shape[2], shape[1], shape[0])
-#     sim_image = np.transpose(sim_image, axes=[2,1,0]).astype(np.float32)
-#     return(sim_image)
-
-# sim_image = simulatedImage(shape)
-
 '''
         New code 
 '''
@@ -76,11 +55,8 @@ dist_transform, indices = ndimage.distance_transform_edt(sim_image,return_indice
 alpha_dist = np.zeros((dist_transform.shape[0],dist_transform.shape[1]))
 n_pixels = dist_transform.shape[0]*dist_transform.shape[1]
 
-#pts = np.where(sim_image > 0)
-#ref_pts = np.where(sim_image < 1)
-
-pts = sim_image_object.getOtherPointsCoords()   #Background points
-ref_pts = sim_image_object.getPointRefCoords()  #Reference points
+pts = sim_image_object.getOtherPointCoords()   #Background points
+ref_pts = sim_image_object.getRefPointCoords()  #Reference points
 
 denom = dist_transform[pts].reshape(n_pixels - 1, dist_transform.shape[2])
 denom = 1/denom[:]
@@ -95,7 +71,7 @@ alpha[ref_pts] = 1
 # =============================================================================
 # Importante: las cooordenadas de los ptos de ref no pueden ser manipuladas por otr pto de referencia
 # =============================================================================
-ref_x_coord, ref_y_coord, ref_z_coord = sim_image_object.getPointRefCoords()
+ref_x_coord, ref_y_coord, ref_z_coord = sim_image_object.getRefPointCoords()
 displace_y_coord = np.asarray(ref_y_coord) + np.array([2,1,-1,-1]) 
 
 displaced_image = np.ones(sim_image.shape)
@@ -151,8 +127,5 @@ im_result0 = result[0,:,:,:] + Ym.reshape(5,5,3)
 im_result1 = result[1,:,:,:] + Ym.reshape(5,5,3)
 im_result2 = result[2,:,:,:] + Ym.reshape(5,5,3)
 
-write_unstructured_file('signos.vtk',im_result.reshape(25,3),r_values)
-write_unstructured_file('original_points.vtk',Ym.reshape(25,3),r_values)
-write_unstructured_file('grid1.vtk',im_result1.reshape(25,3),r_values)
-write_unstructured_file('grid2.vtk',im_result2.reshape(25,3),r_values)
-
+write_unstructured_file('signos.vtk',im_result.reshape(25,3), im_result.shape,r_values)
+write_unstructured_file('original_points.vtk',Ym.reshape(25,3), im_result.shape,r_values)

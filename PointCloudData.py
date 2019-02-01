@@ -23,6 +23,9 @@ class Data(object):
         ref_points_coords = (pts_ref[0][random_points], pts_ref[1][random_points], np.arange(n_ref_points))
         self.img[ref_points_coords] = 0
 
+    def getNumberOfRefPoints(self):
+        return self.img.shape[2]
+
     def getPointCoords(self):
         '''
             Return the X, Y and Z coords in a list with each axes separated.
